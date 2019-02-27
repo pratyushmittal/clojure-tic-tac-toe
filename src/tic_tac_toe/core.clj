@@ -35,16 +35,17 @@
 
 (defn win-turn
   [turns player]
-  (pldb/with-db turns
-    (logic/run* [q]
-      (logic/fresh [a b]
-                   (logic/conde
-                     [(logic/membero [a b q] wins)]
-                     [(logic/membero [a q b] wins)]
-                     [(logic/membero [q a b] wins)])
-                   (turn player a)
-                   (turn player b)
-                   (logic/membero q (available-options turns))))))
+  (let [options (vec (available-options turns))]
+    (pldb/with-db turns
+                  (logic/run* [q]
+                              (logic/fresh [a b]
+                                           (logic/conde
+                                             [(logic/membero [a b q] wins)]
+                                             [(logic/membero [a q b] wins)]
+                                             [(logic/membero [q a b] wins)])
+                                           (turn player a)
+                                           (turn player b)
+                                           (logic/membero q options))))))
 
 
 (defn opponent-of
