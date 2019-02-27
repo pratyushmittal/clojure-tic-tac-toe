@@ -1,7 +1,8 @@
 (ns tic-tac-toe.core
-  (require [clojure.string :as s]
-           [clojure.core.logic :as logic]
-           [clojure.core.logic.pldb :as pldb]))
+  (:require [clojure.string :as s]
+            [clojure.core.logic :as logic]
+            [clojure.core.logic.pldb :as pldb]
+            [clojure.set :as set]))
 
 
 ; Relational db for facts
@@ -27,10 +28,9 @@
 
 (defn available-options
   [turns]
-  (pldb/with-db turns
-                (logic/run* [q]
-                            (fresh [player]
-                                   (logic/!= (turn player q) true)))))
+  (set/difference #{1 2 3 4 5 6 7 8 9}
+                  (played turns :human)
+                  (played turns :computer)))
 
 
 (defn win-turn
@@ -68,11 +68,14 @@
 
 (defn human-turn
   "Asks user for input"
-  []
+  [turns]
   (println "Please play your turn")
-  (let [input (read-line)]
-    (if-not (in? available-options input)
-      (human-turn)
+  (let [input (Integer. (read-line))
+        options (available-options turns)]
+    (if-not (in? options input)
+      (do (println "Please enter a valid position")
+          (println "Valid positions are" options)
+          (human-turn turns))
       input)))
 
 
@@ -80,7 +83,7 @@
   [turns]
   (if (empty? (available-options turns))
     true
-    ()))
+    false))
 
 
 (defn render-board
@@ -95,19 +98,19 @@
         line-marks (map (fn [parts] (s/join "  " parts))
                         (partition 3 marks))
         layout (s/join "\n" line-marks)]
-    (println layout)))
+    (println layout "\n\n")))
 
 
 (defn play
   [turns player]
   (let [pos     (if (= player :computer)
                   (best-turn turns :computer)
-                  (human-turn))
-        turns   (pldb/db-fact turns player pos)]
+                  (human-turn turns))
+        turns   (pldb/db-fact turns turn player pos)]
     (render-board turns)
     (if (game-over turns)
       (println "Game Over")
       (play turns (opponent-of player)))))
 
 
-(play (pldb/db []) :human)
+(play (pldb/db) :human)
