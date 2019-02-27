@@ -36,14 +36,15 @@
 (defn win-turn
   [turns player]
   (pldb/with-db turns
-                (logic/run* [q]
-                            (logic/fresh [a b]
-                                         (logic/conde
-                                           [(logic/membero [a b q] wins)]
-                                           [(logic/membero [a q b] wins)]
-                                           [(logic/membero [q a b] wins)])
-                                         (turn player a)
-                                         (turn player b)))))
+    (logic/run* [q]
+      (logic/fresh [a b]
+                   (logic/conde
+                     [(logic/membero [a b q] wins)]
+                     [(logic/membero [a q b] wins)]
+                     [(logic/membero [q a b] wins)])
+                   (turn player a)
+                   (turn player b)
+                   (logic/membero q (available-options turns))))))
 
 
 (defn opponent-of
@@ -55,10 +56,18 @@
 
 (defn best-turn
   [turns player]
-  (let [opponent (opponent-of player)]
-    (or (first (win-turn turns player))
-        (first (win-turn turns opponent))
-        (first (available-options turns)))))
+  (let [opponent (opponent-of player)
+        win-turns (win-turn turns player)
+        def-turns (win-turn turns opponent)
+        avail-turns (available-options turns)
+        selected (or (first win-turns)
+                     (first def-turns)
+                     (first avail-turns))]
+    (println "Win turns" win-turns "\n"
+             "Def turns" def-turns "\n"
+             "Avail turns" avail-turns "\n"
+             "Chosen" selected)
+    selected))
 
 
 (defn in?
