@@ -9,6 +9,7 @@
 (pldb/db-rel turn player pos)
 
 
+; All winning combinations
 (def wins [[1 2 3]
            [4 5 6]
            [7 8 9]
@@ -20,6 +21,7 @@
 
 
 (defn played
+  "Places played by any given player"
   [turns player]
   (pldb/with-db turns
                 (logic/run* [q]
@@ -27,6 +29,7 @@
 
 
 (defn available-options
+  "Unoccupied places available"
   [turns]
   (set/difference #{1 2 3 4 5 6 7 8 9}
                   (played turns :human)
@@ -34,6 +37,7 @@
 
 
 (defn win-turn
+  "Find winning places"
   [turns player]
   (let [options (vec (available-options turns))]
     (pldb/with-db turns
@@ -49,6 +53,7 @@
 
 
 (defn opponent-of
+  "Returns opponent of the given player"
   [player]
   (if (= player :human)
     :computer
@@ -56,6 +61,7 @@
 
 
 (defn best-turn
+  "Finds the best position to play"
   [turns player]
   (let [opponent (opponent-of player)
         win-turns (win-turn turns player)
@@ -72,6 +78,7 @@
 
 
 (defn in?
+  "Returns true if the item is in given vector or list"
   [coll item]
   (some #(= item %) coll))
 
@@ -90,6 +97,7 @@
 
 
 (defn game-over
+  "Returns true if the game is over"
   [turns]
   (if (empty? (available-options turns))
     true
@@ -97,6 +105,7 @@
 
 
 (defn render-board
+  "Renders playing grid"
   [turns]
   (let [human-turns (played turns :human)
         computer-turns (played turns :computer)
@@ -112,6 +121,7 @@
 
 
 (defn play
+  "Asks next player for their turn"
   [turns player]
   (let [pos     (if (= player :computer)
                   (best-turn turns :computer)
@@ -123,4 +133,5 @@
       (play turns (opponent-of player)))))
 
 
+; Initialize the game play
 (play (pldb/db) :human)
