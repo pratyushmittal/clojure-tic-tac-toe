@@ -96,12 +96,27 @@
       input)))
 
 
+(defn winner
+  "Finds winning player"
+  [turns]
+  (pldb/with-db turns
+                (logic/run* [player]
+                            (logic/fresh [a b c]
+                                         (logic/membero [a b c] wins)
+                                         (turn player a)
+                                         (turn player b)
+                                         (turn player c)))))
+
+
 (defn game-over
   "Returns true if the game is over"
   [turns]
-  (if (empty? (available-options turns))
-    true
-    false))
+  (let [no-positions? (empty? (available-options turns))
+        winner       (first (winner turns))]
+    (cond
+      (and (not winner) (not no-positions?)) false
+      winner (do (println winner "won|") true)
+      :else (do (println "Game is a tie") true))))
 
 
 (defn render-board
