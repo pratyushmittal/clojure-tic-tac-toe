@@ -31,15 +31,15 @@
 (defn available-options
   "Unoccupied places available"
   [turns]
-  (set/difference #{1 2 3 4 5 6 7 8 9}
-                  (played turns :human)
-                  (played turns :computer)))
+  (vec (set/difference #{1 2 3 4 5 6 7 8 9}
+                       (played turns :human)
+                       (played turns :computer))))
 
 
 (defn win-turn
   "Find winning places"
   [turns player]
-  (let [options (vec (available-options turns))]
+  (let [options (available-options turns)]
     (pldb/with-db turns
                   (logic/run* [q]
                               (logic/fresh [a b]
@@ -69,7 +69,7 @@
         avail-turns (available-options turns)
         selected (or (first win-turns)
                      (first def-turns)
-                     (first avail-turns))]
+                     (rand-nth avail-turns))]
     (println "Win turns" win-turns "\n"
              "Def turns" def-turns "\n"
              "Avail turns" avail-turns "\n"
