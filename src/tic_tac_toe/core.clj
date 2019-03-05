@@ -83,11 +83,20 @@
   (some #(= item %) coll))
 
 
+(defn parse-input
+  "Parses human input to a number"
+  [text]
+  (try
+      (Integer. text)
+     (catch Exception e
+       text)))
+
+
 (defn human-turn
   "Asks user for input"
   [turns]
   (println "Please play your turn")
-  (let [input (Integer. (read-line))
+  (let [input (parse-input (read-line))
         options (available-options turns)]
     (if-not (in? options input)
       (do (println "Please enter a valid position")
